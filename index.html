@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Recognition Experiment</title>
+        <meta name="author" content="Jackie Spear"/>
+        <meta name="description" content="A psychology recognition memory experiment"/>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <script src="jspsych-6.3.1/jspsych.js"></script>
+        <script src="jspsych-6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
+        <script src="jspsych-6.3.1/plugins/jspsych-external-html.js"></script>
+        <script src="jspsych-6.3.1/plugins/jspsych-survey-text.js"></script>
+        <script src="jspsych-6.3.1/plugins/jspsych-survey-html-form.js"></script>
+        <script src="jspsych-6.3.1/plugins/jspsych-fullscreen.js"></script>
+        <script src='stimuli/exp_text.js'></script>
+        <script src='stimuli/study_words_consist_practice.js'></script>
+        <script src='stimuli/study_words_inconsist_practice.js'></script>
+        <script src='stimuli/study_words_consist.js'></script>
+        <script src='stimuli/study_words_inconsist.js'></script>
+        <script src='stimuli/test_words.js'></script>
+        <link href="jspsych-6.3.1/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+    </head>
+    <body></body>
+
+<!-- Allow remote storage on Google Firebase -->
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-database.js"></script>
+
+<!-- enter some javascript code-->
+<script type="text/javascript">
+// Firebase set up
+
+// See: https://crumplab.github.io/jspsychrexamples/FirebaseDemo/Instructions_FirebaseDemo.html 
+ // Your web app's Firebase configuration (given to us by firebase)
+  ///////////////////////////////////////////////////////////////// Change this block of code for every new Firebase database
+   /////////////////////////////////////////////////////////////////
+
+// Import the functions you need from the SDKs you need
+//import { initializeApp } from "firebase/app";
+//import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyA9znc2Ly1gi1L99nixkPsNbk_30DJKOpc",
+  authDomain: "productiontyping1e.firebaseapp.com",
+  databaseURL: "https://productiontyping1e-default-rtdb.firebaseio.com",
+  projectId: "productiontyping1e",
+  storageBucket: "productiontyping1e.appspot.com",
+  messagingSenderId: "1020552808825",
+  appId: "1:1020552808825:web:3ad88e0e8914b3455e47a8",
+  measurementId: "G-DYH2K1PM2V"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+
+  // Get a reference to the database service
+  var database = firebase.database();
+
+   // login anonymous user
+   firebase.auth().signInAnonymously().catch(function(error) {
+  // Handle Errors here.
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  // ...
+});
+
+  /////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////
+
+  // Get a reference to the database service
+  var database = firebase.database();
+
+   // login anonymous user
+   firebase.auth().signInAnonymously().catch(function(error) {
+  // Handle Errors here.
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  // ...
+});
+  
+  // check if user can sign on to firebase 
+  firebase.auth().onAuthStateChanged(function(user) {
+  if (user) {
+    // User is signed in.
+    var isAnonymous = user.isAnonymous;
+    var uid = user.uid;
+    // ...
+  } else {
+    // User is signed out.
+    // ...
+  }
+  // ...
+});
+</script>
+
+
+<script>
+
+
+/////////////////////////////////////////////////////////////
+//Assign Random instructions function (read or produce)
+//Custom Function for this experiment 
+function randomize_instructions(list){
+  R_instructions=[]; // create an empty list/array
+  for(i=0; i<list.length; i++){ //iterate for every element in the list
+    if(i<(list.length/2)){ //if it's in the first half of the list
+      R_instructions.push("<p style='font-size: 28px; color: green;'>PRODUCE</p>"); // put the word produce in. .push adds new items onto the end of any array
+    } else{ //otherwise
+      R_instructions.push("<p style='font-size: 28px; color: red;'>READ</p>"); //put the word read
+    }
+  }
+  R_instructions=jsPsych.randomization.repeat(R_instructions,1); //this will then randomize that list
+  for(i=0; i<list.length; i++){ //for every trail, i+1
+    list[i].instructions = R_instructions[i]
+  }
+  return(list);
+}
+
+
+//console.log(studywords);
+studywords_consist=randomize_instructions(studywords_consist); //using the above function to randomize consistent words
+studywords_inconsist=randomize_instructions(studywords_inconsist); //using the above function to randomize inconsistent words
+console.log(studywords_consist);
+console.log(studywords_inconsist);
+
+studywords = studywords_consist.concat(studywords_inconsist); //adding the two arrays together
+studywords = jsPsych.randomization.repeat(studywords, 1)
+console.log(studywords); 
+/////////////////////////////
+studywords_consist_practice=randomize_instructions(studywords_consist_practice); //randomzing words for practice trial
+studywords_inconsist_practice=randomize_instructions(studywords_inconsist_practice);
+
+studywords_practice = studywords_consist_practice.concat(studywords_inconsist_practice);
+studywords_practice = jsPsych.randomization.repeat(studywords_practice, 1)
+
+
+
+
+
+
+/* experiment parameters */
+// generate a random subject ID with 15 characters
+var subject_id = jsPsych.randomization.randomID(15);
+
+// get the id number for the SONA participant so that we can grant credits automatically
+var SONA_ID = getUrlParam('id','Empty');
+
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+// Get the time that the experiment began (ms since 1 January 1970)
+var start_time = new Date().getTime();
+
+// record this data to all trials
+jsPsych.data.addProperties({
+  subject: subject_id,
+  StartTime: start_time,
+});
+    
+// to check for consent
+var consent_check = false;
+    
+ // function to check if in fullscreen mode
+  function is_fullscreen(){
+  // check if in fullscreen mode
+  if(window.innerWidth == screen.width && window.innerHeight == screen.height){
+    return true;
+  }else{return false}
+  }
+
+  function getUrlParam(parameter, defaultvalue){
+    var urlparameter = defaultvalue;
+    if(window.location.href.indexOf(parameter) > -1){
+        urlparameter = getUrlVars()[parameter];
+        }
+    return urlparameter;
+  }
+
+// set up consent procedure
+var consent = {
+  type: "external-html",
+  url: "forms/consent.html",
+  cont_btn: "consent-btns",
+  data: {"phase": "Consent"},
+};
+
+// set up welcome screen 
+var welcome = {
+  type: "html-keyboard-response",
+  stimulus: welcome_text,
+  data: {"phase": "Welcome",
+  },
+};
+
+// set up instructions screen (including attention check)
+var instructions = {
+  timeline: [
+    // first trial is displaying the experiment instructions
+    {
+      type: "html-keyboard-response",
+      stimulus: instruction_text,
+      data: {"phase": "Instructions"},
+    },
+    // second trial is displaying the instructions check
+    {
+      type: "survey-text",
+      questions: [
+        {
+          prompt: attention_check_text, 
+          columns: 20, 
+          rows: 1, 
+          required: true, 
+          name: "Attention_check"
+        },
+      ],
+      data: {"phase": "Attention_Check"},
+    },
+  ],
+  // wait 1 second after completion
+  post_trial_gap: 1000,
+  // record if in fullscreen
+  on_finish: function(data){
+    data.fullscreen = is_fullscreen();
+  },
+ // if the participant recorded anything except "4" then repeat (answer to 2+2 in the instructions)
+ loop_function: function(data){
+    console.log(data.values()[1]);
+    response_data = data.values()[1].response;
+    if(response_data.Attention_check == "4"){
+      return false
+    }else{
+      return true
+    }
+  },
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Present the PRACTICE study words
+var study_phase = {
+            type: 'html-keyboard-response',
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: jsPsych.NO_KEYS,
+            //data: jsPsych.timelineVariable("data"),
+            trial_duration: 2000, // words will appear for 2 seconds
+            post_trial_gap: 500, // like a blank 500
+            data: {instruc: jsPsych.timelineVariable("instructions"), phase:"study", type: jsPsych.timelineVariable('data')},
+            //timeline_variables: studywords,
+           // randomize_order: true,
+};
+
+//Present the instruction to produce or read during PRACTICE phase
+var study_instructions123 = {
+    type: 'survey-html-form',
+    button_label: 'Press enter to continue',
+    preamble: function(){
+        var html = `
+          <p>${jsPsych.timelineVariable('stimulus')}</p>
+          <p>${jsPsych.timelineVariable('instructions')}</p>`
+        return html;
+    },
+    html:  '<p> <input type="text" onkeydown="return (event.keycode!=13);" id="test-resp-box" name="response" size="10" style=color:white;/></p>', //color being white will not mirror typed word to the screen
+    post_trial_gap: 500, // changing this to 3 seconds so that each trail is equal (e.g. produce vs. read),
+    trial_duration: 3000,
+    data: {instruc: jsPsych.timelineVariable("instructions"), phase:"study", type: jsPsych.timelineVariable('data')},
+    autofocus: 'test-resp-box',
+    //timeline_variables: study_instructions,
+    //randomize_order:true,
+};
+
+//Putting the study words and study instruction together for the PRACTICE phase
+ var study_procedure_practice = {
+   timeline: [study_instructions123],
+   timeline_variables: studywords_practice
+ };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//test phase instructions presented after study PRACTICE phase is over
+var practice_test_instructions = {
+  type: "html-keyboard-response",
+  stimulus: post_practice_text,
+  choices: ['w'],
+  data: {"phase": "Practice_Test_Instructions",
+},
+};
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Present the study words
+var study_phase = {
+            type: 'html-keyboard-response',
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: jsPsych.NO_KEYS,
+            //data: jsPsych.timelineVariable("data"),
+            trial_duration: 2000, // words will appear for 2 seconds
+            post_trial_gap: 500, // like a blank 500
+            data: {instruc: jsPsych.timelineVariable("instructions"), phase:"study", type: jsPsych.timelineVariable('data')},
+            //timeline_variables: studywords,
+           // randomize_order: true,
+};
+
+
+
+//Present the instruction to produce or read 
+var study_instructions123 = {
+    type: 'survey-html-form',
+    button_label: 'Press enter to continue',
+    preamble: function(){
+        var html = `
+          <p>${jsPsych.timelineVariable('stimulus')}</p>
+          <p>${jsPsych.timelineVariable('instructions')}</p>`
+        return html;
+    },
+    html:  '<p> <input type="text" onkeydown="return (event.keycode!=13);" id="test-resp-box" name="response" size="10" style=color:white;/></p>', //color being white will not mirror typed word to the screen
+    post_trial_gap: 500, // changing this to 3 seconds so that each trail is equal (e.g. produce vs. read),
+    trial_duration: 3000,
+    data: {instruc: jsPsych.timelineVariable("instructions"), phase:"study", type: jsPsych.timelineVariable('data')},
+    autofocus: 'test-resp-box',
+    //timeline_variables: study_instructions,
+    //randomize_order:true,
+};
+
+//Putting the study words and study instruction together
+ var study_procedure = {
+   timeline: [study_instructions123],
+   timeline_variables: studywords
+ };
+
+
+////////////////////////
+
+// var production_effect_procedure = {
+//   timeline: [
+//     {
+//   type: 'html-keyboard-response',
+//             stimulus: jsPsych.timelineVariable('stimulus'),
+//             choices: jsPsych.NO_KEYS,
+//             prompt: jsPsych.timelineVariable("study_instruction"),
+//             data: jsPsych.timelineVariable("data"),
+//             trial_duration: 2000, // words will appear for 2 seconds
+//             post_trial_gap: 500 // like a blank 500
+  
+//     },
+//     {
+//       type: 'html-keyboard-response',
+//       stimulus: jsPsych.timelineVariable("study_instruction"),
+//       choices: ['f'],
+//       data: jsPsych.timelineVariable("data"),
+//       post_trial_gap: 500
+//   }
+// ],
+// timeline_variables: [studywords, study_instructions],
+// randomize_order:true
+// };
+
+
+//////////////////////
+
+
+
+
+
+//test phase instructions presented after study phase is over
+var test_instructions = {
+  type: "html-keyboard-response",
+  stimulus: test_instruction_text,
+  choices: ['i'],
+  data: {"phase": "Test_Instructions",
+},
+};
+
+//Present the test words
+var test_phase = {
+    timeline: [
+        {
+            type: 'html-keyboard-response',
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: ['y', 'n'],
+            data: jsPsych.timelineVariable("data"), phase: "test",
+            response_ends_trial:true,
+            post_trial_gap: 500 // like a blank 500
+        }
+    ],
+    randomize_order: true,
+    timeline_variables: testwords,
+};
+
+// set up debrief block
+var debrief = {
+  type: "html-keyboard-response",
+  stimulus: debrief_text,
+  //post_trial_gap: 1000
+};
+
+// set up full_screen mode
+var enter_full_screen = {
+  type: 'fullscreen',
+  fullscreen_mode: true,
+  message: fullscreen_prompt,
+  // disable button for 15 seconds to force reading
+  on_load: function(data){
+    var test = document.querySelectorAll('button')[0];
+    test.disabled = true;
+    setTimeout(() => {test.disabled = false;},15000); // setting timeout to 15 seconds here
+  }
+};
+
+// prepare an end to full_screen mode 
+var exit_full_screen = {
+  type: 'fullscreen',
+  fullscreen_mode: false,
+  // save data when going through exit full screen routine
+  // will save data at this point if they have alrady exited full screen
+  on_finish: function() {
+    firebase.database().ref(subject_id).set({
+      data: jsPsych.data.get().values()
+    })
+  }
+};
+
+// if a subject does not consent //
+var no_consent = {
+  timeline: [
+    {
+      type: "external-html",
+      url: "forms/no_consent_deb.html",
+      data: {"phase": "No_consent"},
+    },
+    ],
+  conditional_function: function(data){
+    if(consent_check == false){
+      return true
+    }else{
+      return false
+    }
+  }
+};
+
+/*set up experiment structure*/
+var timeline = [];
+timeline.push(consent);
+timeline.push(no_consent);
+timeline.push(welcome);
+timeline.push(enter_full_screen);
+timeline.push(instructions);
+timeline.push(study_procedure_practice);
+timeline.push(practice_test_instructions);
+timeline.push(study_procedure); // this is new
+timeline.push(test_instructions);
+timeline.push(test_phase);
+timeline.push(exit_full_screen);
+timeline.push(debrief);
+
+/*start experiment*/
+jsPsych.init({
+    timeline: timeline,
+    on_finish: function() {
+     window.location.href = "https://umanitobapsych.sona-systems.com/webstudy_credit.aspx?experiment_id=1303&credit_token=a035fd3a62b541dcae118ab791f90307&survey_code="+SONA_ID; //changed
+      // display data at end:
+      //jsPsych.data.displayData(); commented out for final version
+    }
+});
+
+  </script>
+  </html>
